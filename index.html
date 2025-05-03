@@ -84,8 +84,7 @@
   <script>
 // Nuova versione con debug integrato
 const AUDIO_STREAM_URL = "https://radiokiki.out.airtime.pro/radiokiki_a?_ga=2.72733843.1878812989.1746195515-641388124.1746064662";
-const METADATA_API = "https://radiokiki.airtime.pro/api/live-info";
-
+const METADATA_API = "https://corsproxy.io/?" + encodeURIComponent("https://radiokiki.airtime.pro/api/live-info");
 async function updateMetadata() {
     try {
         const response = await fetch(METADATA_API);

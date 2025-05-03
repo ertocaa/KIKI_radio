@@ -81,63 +81,39 @@
         </div>
     </div>
 
-    <script>
-        // Configurazione
-        const AUDIO_STREAM_URL = "https://radiokiki.out.airtime.pro/radiokiki_a?_ga=2.72733843.1878812989.1746195515-641388124.1746064662";
-        const METADATA_API = "https://radiokiki.airtime.pro/api/live-info";
+  <script>
+// Nuova versione con debug integrato
+const AUDIO_STREAM_URL = "https://radiokiki.out.airtime.pro/radiokiki_a?_ga=2.72733843.1878812989.1746195515-641388124.1746064662";
+const METADATA_API = "https://radiokiki.airtime.pro/api/live-info";
 
-        // Elementi DOM
-        const audioElement = document.getElementById('audioPlayer');
-        const playPauseBtn = document.getElementById('playPauseBtn');
-        const trackInfo = document.getElementById('trackInfo');
-        const showInfo = document.getElementById('showInfo');
-
-        // Inizializza lo stream
-        audioElement.src = AUDIO_STREAM_URL;
-
-        // Gestione pulsante Play/Pause
-        playPauseBtn.addEventListener('click', () => {
-            audioElement[audioElement.paused ? 'play' : 'pause']();
-            playPauseBtn.textContent = audioElement.paused ? '▶ PLAY' : '⏸ PAUSA';
-        });
-
-        // Gestione volume
-        document.getElementById('volume').addEventListener('input', (e) => {
-            audioElement.volume = e.target.value;
-        });
-
-        // Funzione aggiornamento metadati migliorata
-        async function updateMetadata() {
-            try {
-                const response = await fetch(METADATA_API + '?' + new Date().getTime());
-                const data = await response.json();
-                
-                // Controllo struttura dati
-                if(data?.current?.track) {
-                    const artist = data.current.track.creator || 'Artista sconosciuto';
-                    const title = data.current.track.title || 'Brano non disponibile';
-                    trackInfo.innerHTML = `🎧 ${artist} - ${title}`;
-                }
-
-                if(data?.current?.show) {
-                    showInfo.textContent = `📻 ${data.current.show.name}`;
-                }
-                
-            } catch (error) {
-                console.log('Aggiornamento metadati fallito');
-            }
-        }
-
-        // Aggiornamento ottimizzato
-        let metadataInterval = setInterval(updateMetadata, 3000);
+async function updateMetadata() {
+    try {
+        const response = await fetch(METADATA_API);
+        console.log("HTTP Status:", response.status); // Debug 1
         
-        // Forza primo aggiornamento
-        setTimeout(updateMetadata, 1000);
+        if(!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+        
+        const data = await response.json();
+        console.log("API Response:", data); // Debug 2
 
-        // Gestione errori audio
-        audioElement.addEventListener('error', (e) => {
-            console.error('Errore audio:', audioElement.error);
-        });
-    </script>
+        // Controllo struttura dati avanzato
+        const trackData = data?.current?.track || {};
+        const showData = data?.current?.show || {};
+
+        document.getElementById('trackInfo').textContent = 
+            `${trackData.creator || 'Artista'} - ${trackData.title || 'Titolo non disponibile'}`;
+        
+        document.getElementById('showInfo').textContent = 
+            `Programma: ${showData.name || 'Trasmissione in diretta'}`;
+
+    } catch (error) {
+        console.error("Errore completo:", error); // Debug 3
+        document.getElementById('trackInfo').textContent = "Metadati non disponibili";
+    }
+}
+
+// Test immediato
+updateMetadata();
+</script>
 </body>
 </html>

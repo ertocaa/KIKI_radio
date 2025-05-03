@@ -1,153 +1,151 @@
 <!DOCTYPE html>
 <html>
 <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Radio Kiki Player</title>
     <style>
         :root {
-            --primary-color: #FF6B6B;  /* Colore principale */
-            --background-color: #2D2D2D;  /* Sfondo player */
-            --text-color: #FFFFFF;  /* Colore testo */
-            --border-radius: 20px;  /* Bordi arrotondati */
+            --verde: #00ff00;
+            --nero: #000000;
+            --grigio: #1a1a1a;
         }
 
-        .kiki-player {
-            background: var(--background-color);
-            padding: 25px;
-            border-radius: var(--border-radius);
-            max-width: 600px;
-            margin: 20px auto;
-            font-family: 'Arial Rounded MT Bold', Arial, sans-serif;
-            box-shadow: 0 8px 15px rgba(0,0,0,0.3);
-        }
-
-        .player-header {
-            text-align: center;
-            margin-bottom: 20px;
-        }
-
-        .station-name {
-            color: var(--primary-color);
-            font-size: 1.8em;
+        body {
             margin: 0;
-        }
-
-        .metadata-container {
-            color: var(--text-color);
-            text-align: center;
-            margin: 20px 0;
-            min-height: 60px;
-        }
-
-        .controls-container {
+            background: var(--nero);
+            min-height: 100vh;
             display: flex;
-            justify-content: center;
             align-items: center;
-            gap: 20px;
+            justify-content: center;
         }
 
-        .play-btn {
-            background: var(--primary-color);
-            border: none;
-            padding: 15px 30px;
-            border-radius: 50px;
-            font-size: 1.2em;
-            cursor: pointer;
-            transition: transform 0.3s ease;
-        }
-
-        .play-btn:hover {
-            transform: scale(1.1);
-        }
-
-        .volume-slider {
-            width: 120px;
-            height: 8px;
-            background: #555;
+        .player-container {
+            background: var(--grigio);
+            padding: 20px;
             border-radius: 10px;
+            border: 2px solid var(--verde);
+            width: 90%;
+            max-width: 500px;
+            box-shadow: 0 0 15px var(--verde);
         }
 
-        .now-playing {
+        .metadata-box {
+            color: var(--verde);
+            font-family: 'Courier New', monospace;
+            text-align: center;
+            padding: 15px;
+            margin: 15px 0;
+            border: 1px dashed var(--verde);
+            border-radius: 5px;
+        }
+
+        .controls {
+            display: flex;
+            gap: 15px;
+            align-items: center;
+            justify-content: center;
+        }
+
+        #playPauseBtn {
+            background: var(--verde);
+            color: var(--nero);
+            border: none;
+            padding: 12px 30px;
+            border-radius: 25px;
+            cursor: pointer;
             font-size: 1.1em;
-            margin: 10px 0;
+            transition: 0.3s;
         }
 
-        .show-title {
-            color: var(--primary-color);
-            font-style: italic;
+        #playPauseBtn:hover {
+            opacity: 0.8;
+            transform: scale(1.05);
+        }
+
+        #volume {
+            width: 100px;
+            height: 4px;
+            accent-color: var(--verde);
+        }
+
+        #trackInfo {
+            font-size: 1.2em;
+            margin-bottom: 5px;
+        }
+
+        #showInfo {
+            font-size: 0.9em;
+            opacity: 0.8;
         }
     </style>
 </head>
 <body>
-    <div class="kiki-player">
-        <div class="player-header">
-            <h1 class="station-name">Radio Kiki</h1>
-        </div>
+    <div class="player-container">
+        <audio id="audioPlayer"></audio>
         
-        <audio id="radio-stream" src="https://radiokiki.airtime.pro/radio-kiki/radio.mp3"></audio>
-        
-        <div class="metadata-container">
-            <div class="now-playing">IN ONDA:</div>
-            <div id="current-track">Caricamento...</div>
-            <div class="show-title" id="current-show"></div>
+        <div class="metadata-box">
+            <div id="trackInfo">Caricamento traccia...</div>
+            <div id="showInfo">Programma: Caricamento...</div>
         </div>
 
-        <div class="controls-container">
-            <button class="play-btn" id="playPause">▶ PLAY</button>
-            <input type="range" class="volume-slider" id="volume" min="0" max="1" step="0.1" value="1">
+        <div class="controls">
+            <button id="playPauseBtn">▶ PLAY</button>
+            <input type="range" id="volume" min="0" max="1" step="0.1" value="1">
         </div>
     </div>
 
     <script>
         // Configurazione
-        const config = {
-            metadataUrl: "https://radiokiki.airtime.pro/api/live-info",
-            updateInterval: 5000
-        };
+        const AUDIO_STREAM_URL = "https://radiokiki.out.airtime.pro/radiokiki_a?_ga=2.72733843.1878812989.1746195515-641388124.1746064662";
+        const METADATA_API = "https://radiokiki.airtime.pro/api/live-info";
 
         // Elementi DOM
-        const audio = document.getElementById('radio-stream');
-        const playPauseBtn = document.getElementById('playPause');
-        const currentTrack = document.getElementById('current-track');
-        const currentShow = document.getElementById('current-show');
+        const audioElement = document.getElementById('audioPlayer');
+        const playPauseBtn = document.getElementById('playPauseBtn');
+        const trackInfo = document.getElementById('trackInfo');
+        const showInfo = document.getElementById('showInfo');
 
-        // Controlli Player
+        // Inizializza lo stream
+        audioElement.src = AUDIO_STREAM_URL;
+
+        // Gestione pulsante Play/Pause
         playPauseBtn.addEventListener('click', () => {
-            if(audio.paused) {
-                audio.play();
+            if(audioElement.paused) {
+                audioElement.play();
                 playPauseBtn.textContent = '⏸ PAUSA';
             } else {
-                audio.pause();
+                audioElement.pause();
                 playPauseBtn.textContent = '▶ PLAY';
             }
         });
 
+        // Gestione volume
         document.getElementById('volume').addEventListener('input', (e) => {
-            audio.volume = e.target.value;
+            audioElement.volume = e.target.value;
         });
 
-        // Funzione aggiornamento metadati
+        // Aggiornamento metadati
         async function updateMetadata() {
             try {
-                const response = await fetch(config.metadataUrl);
+                const response = await fetch(METADATA_API);
                 const data = await response.json();
                 
-                currentTrack.innerHTML = data.current.track.title ? 
-                    `<strong>${data.current.track.creator}</strong> - ${data.current.track.title}` : 
-                    "Trasmissione in diretta";
+                if(data.current?.track?.title) {
+                    trackInfo.innerHTML = `🎧 ${data.current.track.creator || 'Artista'} - ${data.current.track.title}`;
+                }
                 
-                currentShow.textContent = data.current.show.name || "Programma in diretta";
-                
+                if(data.current?.show?.name) {
+                    showInfo.textContent = `Programma: ${data.current.show.name}`;
+                }
             } catch (error) {
-                console.error('Errore metadati:', error);
-                currentTrack.textContent = "In onda: Programma Live";
+                console.log('Aggiornamento metadati fallito, riprovo...');
             }
         }
 
-        // Aggiornamento automatico
-        setInterval(updateMetadata, config.updateInterval);
+        // Aggiorna ogni 5 secondi
+        setInterval(updateMetadata, 5000);
         updateMetadata();
-
-        // Inizializzazione volume
-        audio.volume = 1;
     </script>
 </body>
 </html>

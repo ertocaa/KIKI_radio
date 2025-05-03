@@ -3,7 +3,6 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="icon" href="data:;base64,=">
     <title>Radio Kiki Player</title>
     <style>
         :root {
@@ -28,7 +27,6 @@
             border: 2px solid var(--verde);
             width: 90%;
             max-width: 500px;
-            box-shadow: 0 0 15px var(--verde);
         }
 
         .metadata-box {
@@ -39,7 +37,6 @@
             margin: 15px 0;
             border: 1px dashed var(--verde);
             border-radius: 5px;
-            min-height: 80px;
         }
 
         .controls {
@@ -49,21 +46,13 @@
             justify-content: center;
         }
 
-        #playPauseBtn {
+        button {
             background: var(--verde);
             color: var(--nero);
             border: none;
             padding: 12px 30px;
             border-radius: 25px;
             cursor: pointer;
-            font-size: 1.1em;
-            transition: 0.3s;
-        }
-
-        #volume {
-            width: 100px;
-            height: 4px;
-            accent-color: var(--verde);
         }
     </style>
 </head>
@@ -72,8 +61,8 @@
         <audio id="audioPlayer"></audio>
         
         <div class="metadata-box">
-            <div id="trackInfo">🎧 Inizializzazione...</div>
-            <div id="showInfo">📻 Connessione alla radio</div>
+            <div id="trackInfo">🎧 Caricamento metadati...</div>
+            <div id="showInfo">📻 Connessione in corso</div>
         </div>
 
         <div class="controls">
@@ -83,75 +72,53 @@
     </div>
 
     <script>
-        // 1. CONFIGURAZIONE PRINCIPALE (MODIFICARE QUESTI VALORI)
-        const AUDIO_STREAM_URL = "https://radiokiki.out.airtime.pro/radiokiki_a?_ga=2.72733843.1878812989.1746195515-641388124.1746064662";
-        const METADATA_API = "https://api.cors.sh/https://radiokiki.airtime.pro/api/live-info";
+        // Configurazione
+        const AUDIO_STREAM_URL = "INSERISCI_URL_STREAM";
+        const METADATA_API = "https://corsproxy.io/?https://radiokiki.airtime.pro/api/live-info";
 
-        // 2. ELEMENTI DOM
-        const elements = {
-            audio: document.getElementById('audioPlayer'),
-            playBtn: document.getElementById('playPauseBtn'),
-            trackInfo: document.getElementById('trackInfo'),
-            showInfo: document.getElementById('showInfo'),
-            volume: document.getElementById('volume')
-        };
+        // Elementi DOM
+        const audioElement = document.getElementById('audioPlayer');
+        const playBtn = document.getElementById('playPauseBtn');
+        const trackInfo = document.getElementById('trackInfo');
+        const showInfo = document.getElementById('showInfo');
 
-        // 3. INIZIALIZZAZIONE PLAYER
-        elements.audio.src = AUDIO_STREAM_URL;
+        // Inizializzazione
+        audioElement.src = AUDIO_STREAM_URL;
 
-        // 4. GESTIONE EVENTI
-        elements.playBtn.addEventListener('click', togglePlay);
-        elements.volume.addEventListener('input', updateVolume);
+        // Gestione eventi
+        playBtn.addEventListener('click', () => {
+            audioElement[audioElement.paused ? 'play' : 'pause']();
+            playBtn.textContent = audioElement.paused ? '▶ PLAY' : '⏸ PAUSA';
+        });
 
-        // 5. FUNZIONE PRINCIPALE METADATI CON PROXY
-        async function fetchMetadata() {
+        document.getElementById('volume').addEventListener('input', (e) => {
+            audioElement.volume = e.target.value;
+        });
+
+        // Funzione aggiornamento metadati
+        async function updateMetadata() {
             try {
-                const response = await fetch(METADATA_API, {
-                    headers: {
-                        'x-cors-api-key': 'live_2a5ed54d0d7b9a0d8b9d0d7b9a0d8b9d0' // Chiave demo CORS.SH
-                    }
-                });
-                
-                if(!response.ok) throw new Error(`Errore HTTP: ${response.status}`);
+                const response = await fetch(METADATA_API);
+                if(!response.ok) throw new Error('Errore HTTP');
                 
                 const data = await response.json();
-                updateDisplay(data);
-
+                
+                if(data.current?.track?.title) {
+                    trackInfo.textContent = `🎧 ${data.current.track.creator} - ${data.current.track.title}`;
+                }
+                
+                if(data.current?.show?.name) {
+                    showInfo.textContent = `📻 ${data.current.show.name}`;
+                }
             } catch (error) {
                 console.error('Errore metadati:', error);
-                elements.trackInfo.textContent = "🔴 Metadati non disponibili";
-                elements.showInfo.textContent = "Controllare la connessione";
+                trackInfo.textContent = "🔴 Metadati non disponibili";
             }
         }
 
-        // 6. FUNZIONI DI SUPPORTO
-        function togglePlay() {
-            elements.audio[elements.audio.paused ? 'play' : 'pause']();
-            elements.playBtn.textContent = elements.audio.paused ? '▶ PLAY' : '⏸ PAUSA';
-        }
-
-        function updateVolume(e) {
-            elements.audio.volume = e.target.value;
-        }
-
-        function updateDisplay(data) {
-            const track = data?.current?.track || {};
-            const show = data?.current?.show || {};
-            
-            elements.trackInfo.textContent = `🎧 ${track.creator || 'Artista'} - ${track.title || 'Selezione musicale'}`;
-            elements.showInfo.textContent = `📻 ${show.name || 'Programma in diretta'}`;
-        }
-
-        // 7. AVVIO AUTOMATICO
-        setInterval(fetchMetadata, 4000);
-        fetchMetadata();
-        elements.audio.volume = 0.5;
-
-        // 8. GESTIONE ERRORI AUDIO
-        elements.audio.addEventListener('error', (e) => {
-            console.error('Errore audio:', elements.audio.error);
-            elements.trackInfo.textContent = "🔇 Errore di connessione audio";
-        });
+        // Aggiornamento ogni 5 secondi
+        setInterval(updateMetadata, 5000);
+        updateMetadata();
     </script>
 </body>
 </html>

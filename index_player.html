@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <style>
+        :root {
+            --primary-color: #FF6B6B;  /* Colore principale */
+            --background-color: #2D2D2D;  /* Sfondo player */
+            --text-color: #FFFFFF;  /* Colore testo */
+            --border-radius: 20px;  /* Bordi arrotondati */
+        }
+
+        .kiki-player {
+            background: var(--background-color);
+            padding: 25px;
+            border-radius: var(--border-radius);
+            max-width: 600px;
+            margin: 20px auto;
+            font-family: 'Arial Rounded MT Bold', Arial, sans-serif;
+            box-shadow: 0 8px 15px rgba(0,0,0,0.3);
+        }
+
+        .player-header {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .station-name {
+            color: var(--primary-color);
+            font-size: 1.8em;
+            margin: 0;
+        }
+
+        .metadata-container {
+            color: var(--text-color);
+            text-align: center;
+            margin: 20px 0;
+            min-height: 60px;
+        }
+
+        .controls-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .play-btn {
+            background: var(--primary-color);
+            border: none;
+            padding: 15px 30px;
+            border-radius: 50px;
+            font-size: 1.2em;
+            cursor: pointer;
+            transition: transform 0.3s ease;
+        }
+
+        .play-btn:hover {
+            transform: scale(1.1);
+        }
+
+        .volume-slider {
+            width: 120px;
+            height: 8px;
+            background: #555;
+            border-radius: 10px;
+        }
+
+        .now-playing {
+            font-size: 1.1em;
+            margin: 10px 0;
+        }
+
+        .show-title {
+            color: var(--primary-color);
+            font-style: italic;
+        }
+    </style>
+</head>
+<body>
+    <div class="kiki-player">
+        <div class="player-header">
+            <h1 class="station-name">Radio Kiki</h1>
+        </div>
+        
+        <audio id="radio-stream" src="https://radiokiki.airtime.pro/radio-kiki/radio.mp3"></audio>
+        
+        <div class="metadata-container">
+            <div class="now-playing">IN ONDA:</div>
+            <div id="current-track">Caricamento...</div>
+            <div class="show-title" id="current-show"></div>
+        </div>
+
+        <div class="controls-container">
+            <button class="play-btn" id="playPause">▶ PLAY</button>
+            <input type="range" class="volume-slider" id="volume" min="0" max="1" step="0.1" value="1">
+        </div>
+    </div>
+
+    <script>
+        // Configurazione
+        const config = {
+            metadataUrl: "https://radiokiki.airtime.pro/api/live-info",
+            updateInterval: 5000
+        };
+
+        // Elementi DOM
+        const audio = document.getElementById('radio-stream');
+        const playPauseBtn = document.getElementById('playPause');
+        const currentTrack = document.getElementById('current-track');
+        const currentShow = document.getElementById('current-show');
+
+        // Controlli Player
+        playPauseBtn.addEventListener('click', () => {
+            if(audio.paused) {
+                audio.play();
+                playPauseBtn.textContent = '⏸ PAUSA';
+            } else {
+                audio.pause();
+                playPauseBtn.textContent = '▶ PLAY';
+            }
+        });
+
+        document.getElementById('volume').addEventListener('input', (e) => {
+            audio.volume = e.target.value;
+        });
+
+        // Funzione aggiornamento metadati
+        async function updateMetadata() {
+            try {
+                const response = await fetch(config.metadataUrl);
+                const data = await response.json();
+                
+                currentTrack.innerHTML = data.current.track.title ? 
+                    `<strong>${data.current.track.creator}</strong> - ${data.current.track.title}` : 
+                    "Trasmissione in diretta";
+                
+                currentShow.textContent = data.current.show.name || "Programma in diretta";
+                
+            } catch (error) {
+                console.error('Errore metadati:', error);
+                currentTrack.textContent = "In onda: Programma Live";
+            }
+        }
+
+        // Aggiornamento automatico
+        setInterval(updateMetadata, config.updateInterval);
+        updateMetadata();
+
+        // Inizializzazione volume
+        audio.volume = 1;
+    </script>
+</body>
+</html>

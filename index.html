@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>KIKI Radio Player</title>
     <style>
+        /* Tutti gli stili CSS precedenti rimangono invariati */
         body {
             margin: 0;
             padding: 20px;
@@ -184,8 +185,8 @@
                 currentTrack.artist_name?.trim() || 
                 config.defaultArtist;
 
-            // Prossimo programma
-            const nextShow = data.nextShow?.[0];
+            // Prossimo programma (MODIFICA CHIAVE)
+            const nextShow = data.next || null;
             if(nextShow?.name && nextShow?.starts) {
                 try {
                     const startTime = new Date(nextShow.starts);
@@ -193,7 +194,12 @@
                         hour: '2-digit',
                         minute: '2-digit'
                     });
-                    elements.nextShow.textContent = `${nextShow.name} alle ${formattedTime}`;
+                    
+                    // Estrai artista e titolo dalla struttura corretta
+                    const artist = nextShow.metadata?.artist_name || 'Artista sconosciuto';
+                    const title = nextShow.metadata?.track_title || nextShow.name;
+                    
+                    elements.nextShow.textContent = `${artist} - ${title} alle ${formattedTime}`;
                     elements.nextProgram.style.display = 'block';
                 } catch(e) {
                     console.error('Errore formato data:', e);

@@ -5,8 +5,88 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>KIKI Radio Player</title>
     <style>
-        /* Aggiungi questi nuovi stili */
-        .next-show {
+        body {
+            margin: 0;
+            padding: 20px;
+            background: #000000;
+            font-family: 'Arial', sans-serif;
+            display: flex;
+            justify-content: center;
+            min-height: 100vh;
+        }
+
+        .player-container {
+            background: #2A2A2A;
+            border-radius: 15px;
+            padding: 20px;
+            max-width: 400px;
+            width: 100%;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+        }
+
+        .controls {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 15px;
+        }
+
+        button {
+            background: #AFFF04;
+            border: none;
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: transform 0.2s;
+        }
+
+        button:hover {
+            transform: scale(1.05);
+        }
+
+        button:active {
+            transform: scale(0.95);
+        }
+
+        .track-info {
+            color: white;
+            flex-grow: 1;
+            min-width: 0;
+        }
+
+        .track-title {
+            font-size: 1.1em;
+            margin-bottom: 4px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .track-artist {
+            color: #AFFF04;
+            font-size: 0.9em;
+            opacity: 0.9;
+        }
+
+        .metadata-status {
+            color: #AFFF04;
+            font-size: 0.8em;
+            text-align: right;
+            padding-top: 10px;
+            border-top: 1px solid #3A3A3A;
+            margin-top: 15px;
+        }
+
+        audio {
+            display: none;
+        }
+
+        /* INIZIO AGGIUNTA */
+        .next-program {
             color: #AFFF04;
             font-size: 0.8em;
             margin-top: 10px;
@@ -14,15 +94,21 @@
             border-top: 1px solid #3A3A3A;
             display: none;
         }
-
-        .next-show span {
+        .next-program span {
             opacity: 0.7;
         }
+        /* FINE AGGIUNTA */
 
-        /* Modifica lo stile esistente */
-        .metadata-status {
-            border-top: none;
-            margin-top: 5px;
+        @media (max-width: 480px) {
+            .player-container {
+                margin: 10px;
+                padding: 15px;
+            }
+            
+            button {
+                width: 45px;
+                height: 45px;
+            }
         }
     </style>
 </head>
@@ -35,33 +121,63 @@
                 <div class="track-artist" id="trackArtist">Caricamento in corso...</div>
             </div>
         </div>
-        <div class="next-show" id="nextShow">
-            <span>Prossimo: </span><span id="nextProgram"></span>
+        <!-- INIZIO AGGIUNTA -->
+        <div class="next-program" id="nextProgram">
+            <span>Prossimo: </span><span id="nextShow"></span>
         </div>
+        <!-- FINE AGGIUNTA -->
         <div class="metadata-status" id="metadataStatus"></div>
     </div>
 
     <script>
-        // Modifica solo queste parti dello script esistente
+        // Configurazione
+        const config = {
+            audioUrl: 'https://radiokiki.out.airtime.pro/radiokiki_a',
+            metadataUrl: 'https://api.allorigins.win/raw?url=' + 
+                        encodeURIComponent('https://radiokiki.airtime.pro/api/live-info'),
+            updateInterval: 3000,
+            defaultTitle: 'KIKI Radio',
+            defaultArtist: 'Trasmissione in diretta'
+        };
 
-        // Aggiungi alla sezione Elementi UI
+        // Elementi UI
         const elements = {
             playPauseBtn: document.getElementById('playPauseBtn'),
             trackTitle: document.getElementById('trackTitle'),
             trackArtist: document.getElementById('trackArtist'),
             metadataStatus: document.getElementById('metadataStatus'),
-            nextShow: document.getElementById('nextShow'),
+            audio: new Audio(config.audioUrl),
+            // INIZIO AGGIUNTA
             nextProgram: document.getElementById('nextProgram'),
-            audio: new Audio(config.audioUrl)
+            nextShow: document.getElementById('nextShow')
+            // FINE AGGIUNTA
         };
 
-        // Modifica la funzione updateDisplay
+        // Stato player
+        let isPlaying = false;
+        let lastUpdate = null;
+
+        // Funzioni principali
+        async function updateMetadata() {
+            try {
+                const response = await fetch(config.metadataUrl);
+                if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+                
+                const data = await response.json();
+                updateDisplay(data);
+                lastUpdate = new Date();
+                elements.metadataStatus.textContent = `Aggiornato: ${lastUpdate.toLocaleTimeString()}`;
+            } catch (error) {
+                console.error('Errore metadati:', error);
+                elements.metadataStatus.textContent = 'Errore aggiornamento metadati';
+                elements.trackArtist.textContent = config.defaultArtist;
+            }
+        }
+
         function updateDisplay(data) {
             const currentTrack = data.current?.metadata || {};
             const currentShow = data.currentShow?.[0] || {};
-            const nextShowData = data.nextShow?.[0] || null;
 
-            // Metadati correnti
             elements.trackTitle.textContent = 
                 currentTrack.track_title?.trim() || 
                 currentShow.name?.trim() || 
@@ -71,34 +187,48 @@
                 currentTrack.artist_name?.trim() || 
                 config.defaultArtist;
 
-            // Prossimo programma
-            if(nextShowData && nextShowData.name) {
+            // INIZIO AGGIUNTA
+            const nextShow = data.nextShow?.[0];
+            if(nextShow?.name && nextShow?.starts) {
                 try {
-                    const startTime = new Date(nextShowData.starts);
+                    const startTime = new Date(nextShow.starts);
                     const formattedTime = startTime.toLocaleTimeString('it-IT', {
-                        hour: '2-digit', 
+                        hour: '2-digit',
                         minute: '2-digit'
                     });
-                    elements.nextProgram.textContent = `${nextShowData.name} alle ${formattedTime}`;
-                    elements.nextShow.style.display = 'block';
+                    elements.nextShow.textContent = `${nextShow.name} alle ${formattedTime}`;
+                    elements.nextProgram.style.display = 'block';
                 } catch(e) {
-                    console.error('Errore formato data:', e);
-                    elements.nextShow.style.display = 'none';
+                    elements.nextProgram.style.display = 'none';
                 }
             } else {
-                elements.nextShow.style.display = 'none';
+                elements.nextProgram.style.display = 'none';
             }
+            // FINE AGGIUNTA
         }
 
-        // Aggiungi alla gestione errori
-        async function updateMetadata() {
-            try {
-                // ... codice esistente ...
-            } catch (error) {
-                // ... codice esistente ...
-                elements.nextShow.style.display = 'none';
-            }
-        }
+        // Controlli audio
+        elements.playPauseBtn.addEventListener('click', () => {
+            isPlaying = !isPlaying;
+            elements.playPauseBtn.textContent = isPlaying ? '⏸' : '▶';
+            isPlaying ? elements.audio.play() : elements.audio.pause();
+        });
+
+        // Gestione errori audio
+        elements.audio.addEventListener('error', (e) => {
+            console.error('Errore audio:', e);
+            elements.metadataStatus.textContent = 'Errore riproduzione';
+        });
+
+        // Aggiornamento periodico
+        setInterval(updateMetadata, config.updateInterval);
+        updateMetadata();
+
+        // Gestione connessione
+        window.addEventListener('online', updateMetadata);
+        window.addEventListener('offline', () => {
+            elements.metadataStatus.textContent = 'Connessione assente';
+        });
     </script>
 </body>
 </html>

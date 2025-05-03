@@ -3,6 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" href="data:;base64,=">
     <title>Radio Kiki Player</title>
     <style>
         :root {
@@ -71,8 +72,8 @@
         <audio id="audioPlayer"></audio>
         
         <div class="metadata-box">
-            <div id="trackInfo">🎧 In onda: Selezionando i brani...</div>
-            <div id="showInfo">📻 Programma in diretta</div>
+            <div id="trackInfo">🎧 Inizializzazione...</div>
+            <div id="showInfo">📻 Connessione alla radio</div>
         </div>
 
         <div class="controls">
@@ -81,38 +82,76 @@
         </div>
     </div>
 
-  <script>
-// Nuova versione con debug integrato
-const AUDIO_STREAM_URL = "https://radiokiki.out.airtime.pro/radiokiki_a?_ga=2.72733843.1878812989.1746195515-641388124.1746064662";
-const METADATA_API = "https://corsproxy.io/?" + encodeURIComponent("https://radiokiki.airtime.pro/api/live-info");
-async function updateMetadata() {
-    try {
-        const response = await fetch(METADATA_API);
-        console.log("HTTP Status:", response.status); // Debug 1
-        
-        if(!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
-        
-        const data = await response.json();
-        console.log("API Response:", data); // Debug 2
+    <script>
+        // 1. CONFIGURAZIONE PRINCIPALE (MODIFICARE QUESTI VALORI)
+        const AUDIO_STREAM_URL = "https://radiokiki.out.airtime.pro/radiokiki_a?_ga=2.72733843.1878812989.1746195515-641388124.1746064662";
+        const METADATA_API = "https://api.cors.sh/https://radiokiki.airtime.pro/api/live-info";
 
-        // Controllo struttura dati avanzato
-        const trackData = data?.current?.track || {};
-        const showData = data?.current?.show || {};
+        // 2. ELEMENTI DOM
+        const elements = {
+            audio: document.getElementById('audioPlayer'),
+            playBtn: document.getElementById('playPauseBtn'),
+            trackInfo: document.getElementById('trackInfo'),
+            showInfo: document.getElementById('showInfo'),
+            volume: document.getElementById('volume')
+        };
 
-        document.getElementById('trackInfo').textContent = 
-            `${trackData.creator || 'Artista'} - ${trackData.title || 'Titolo non disponibile'}`;
-        
-        document.getElementById('showInfo').textContent = 
-            `Programma: ${showData.name || 'Trasmissione in diretta'}`;
+        // 3. INIZIALIZZAZIONE PLAYER
+        elements.audio.src = AUDIO_STREAM_URL;
 
-    } catch (error) {
-        console.error("Errore completo:", error); // Debug 3
-        document.getElementById('trackInfo').textContent = "Metadati non disponibili";
-    }
-}
+        // 4. GESTIONE EVENTI
+        elements.playBtn.addEventListener('click', togglePlay);
+        elements.volume.addEventListener('input', updateVolume);
 
-// Test immediato
-updateMetadata();
-</script>
+        // 5. FUNZIONE PRINCIPALE METADATI CON PROXY
+        async function fetchMetadata() {
+            try {
+                const response = await fetch(METADATA_API, {
+                    headers: {
+                        'x-cors-api-key': 'live_2a5ed54d0d7b9a0d8b9d0d7b9a0d8b9d0' // Chiave demo CORS.SH
+                    }
+                });
+                
+                if(!response.ok) throw new Error(`Errore HTTP: ${response.status}`);
+                
+                const data = await response.json();
+                updateDisplay(data);
+
+            } catch (error) {
+                console.error('Errore metadati:', error);
+                elements.trackInfo.textContent = "🔴 Metadati non disponibili";
+                elements.showInfo.textContent = "Controllare la connessione";
+            }
+        }
+
+        // 6. FUNZIONI DI SUPPORTO
+        function togglePlay() {
+            elements.audio[elements.audio.paused ? 'play' : 'pause']();
+            elements.playBtn.textContent = elements.audio.paused ? '▶ PLAY' : '⏸ PAUSA';
+        }
+
+        function updateVolume(e) {
+            elements.audio.volume = e.target.value;
+        }
+
+        function updateDisplay(data) {
+            const track = data?.current?.track || {};
+            const show = data?.current?.show || {};
+            
+            elements.trackInfo.textContent = `🎧 ${track.creator || 'Artista'} - ${track.title || 'Selezione musicale'}`;
+            elements.showInfo.textContent = `📻 ${show.name || 'Programma in diretta'}`;
+        }
+
+        // 7. AVVIO AUTOMATICO
+        setInterval(fetchMetadata, 4000);
+        fetchMetadata();
+        elements.audio.volume = 0.5;
+
+        // 8. GESTIONE ERRORI AUDIO
+        elements.audio.addEventListener('error', (e) => {
+            console.error('Errore audio:', elements.audio.error);
+            elements.trackInfo.textContent = "🔇 Errore di connessione audio";
+        });
+    </script>
 </body>
 </html>

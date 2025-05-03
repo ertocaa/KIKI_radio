@@ -81,11 +81,6 @@
             margin-top: 15px;
         }
 
-        audio {
-            display: none;
-        }
-
-        /* INIZIO AGGIUNTA */
         .next-program {
             color: #AFFF04;
             font-size: 0.8em;
@@ -94,10 +89,14 @@
             border-top: 1px solid #3A3A3A;
             display: none;
         }
+
         .next-program span {
             opacity: 0.7;
         }
-        /* FINE AGGIUNTA */
+
+        audio {
+            display: none;
+        }
 
         @media (max-width: 480px) {
             .player-container {
@@ -121,11 +120,9 @@
                 <div class="track-artist" id="trackArtist">Caricamento in corso...</div>
             </div>
         </div>
-        <!-- INIZIO AGGIUNTA -->
         <div class="next-program" id="nextProgram">
             <span>Prossimo: </span><span id="nextShow"></span>
         </div>
-        <!-- FINE AGGIUNTA -->
         <div class="metadata-status" id="metadataStatus"></div>
     </div>
 
@@ -146,11 +143,9 @@
             trackTitle: document.getElementById('trackTitle'),
             trackArtist: document.getElementById('trackArtist'),
             metadataStatus: document.getElementById('metadataStatus'),
-            audio: new Audio(config.audioUrl),
-            // INIZIO AGGIUNTA
             nextProgram: document.getElementById('nextProgram'),
-            nextShow: document.getElementById('nextShow')
-            // FINE AGGIUNTA
+            nextShow: document.getElementById('nextShow'),
+            audio: new Audio(config.audioUrl)
         };
 
         // Stato player
@@ -161,7 +156,7 @@
         async function updateMetadata() {
             try {
                 const response = await fetch(config.metadataUrl);
-                if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+                if (!response.ok) throw new Error(`Errore HTTP! Status: ${response.status}`);
                 
                 const data = await response.json();
                 updateDisplay(data);
@@ -171,13 +166,15 @@
                 console.error('Errore metadati:', error);
                 elements.metadataStatus.textContent = 'Errore aggiornamento metadati';
                 elements.trackArtist.textContent = config.defaultArtist;
+                elements.nextProgram.style.display = 'none';
             }
         }
 
         function updateDisplay(data) {
+            // Metadati correnti
             const currentTrack = data.current?.metadata || {};
             const currentShow = data.currentShow?.[0] || {};
-
+            
             elements.trackTitle.textContent = 
                 currentTrack.track_title?.trim() || 
                 currentShow.name?.trim() || 
@@ -187,7 +184,7 @@
                 currentTrack.artist_name?.trim() || 
                 config.defaultArtist;
 
-            // INIZIO AGGIUNTA
+            // Prossimo programma
             const nextShow = data.nextShow?.[0];
             if(nextShow?.name && nextShow?.starts) {
                 try {
@@ -199,12 +196,12 @@
                     elements.nextShow.textContent = `${nextShow.name} alle ${formattedTime}`;
                     elements.nextProgram.style.display = 'block';
                 } catch(e) {
+                    console.error('Errore formato data:', e);
                     elements.nextProgram.style.display = 'none';
                 }
             } else {
                 elements.nextProgram.style.display = 'none';
             }
-            // FINE AGGIUNTA
         }
 
         // Controlli audio

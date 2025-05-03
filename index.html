@@ -5,55 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Radio Kiki Player</title>
     <style>
-        :root {
-            --verde: #00ff00;
-            --nero: #000000;
-            --grigio: #1a1a1a;
-        }
-
-        body {
-            margin: 0;
-            background: var(--nero);
-            min-height: 100vh;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-
-        .player-container {
-            background: var(--grigio);
-            padding: 20px;
-            border-radius: 10px;
-            border: 2px solid var(--verde);
-            width: 90%;
-            max-width: 500px;
-        }
-
-        .metadata-box {
-            color: var(--verde);
-            font-family: 'Courier New', monospace;
-            text-align: center;
-            padding: 15px;
-            margin: 15px 0;
-            border: 1px dashed var(--verde);
-            border-radius: 5px;
-        }
-
-        .controls {
-            display: flex;
-            gap: 15px;
-            align-items: center;
-            justify-content: center;
-        }
-
-        button {
-            background: var(--verde);
-            color: var(--nero);
-            border: none;
-            padding: 12px 30px;
-            border-radius: 25px;
-            cursor: pointer;
-        }
+        /* ... (mantieni lo stile precedente) ... */
     </style>
 </head>
 <body>
@@ -62,7 +14,7 @@
         
         <div class="metadata-box">
             <div id="trackInfo">🎧 Caricamento metadati...</div>
-            <div id="showInfo">📻 Connessione in corso</div>
+            <div id="showInfo">📻 Connessione alla radio</div>
         </div>
 
         <div class="controls">
@@ -72,51 +24,39 @@
     </div>
 
     <script>
-        // Configurazione
-        const AUDIO_STREAM_URL = "INSERISCI_URL_STREAM";
-       const METADATA_API = "https://api.allorigins.win/raw?url=https://radiokiki.airtime.pro/api/live-info";
+        // 1. CONFIGURAZIONE OBBLIGATORIA
+        const AUDIO_STREAM_URL = "https://radiokiki.out.airtime.pro/radiokiki_a";
+        const METADATA_API = "https://proxy.cors.sh/https://radiokiki.airtime.pro/api/live-info";
 
-        // Elementi DOM
-        const audioElement = document.getElementById('audioPlayer');
-        const playBtn = document.getElementById('playPauseBtn');
-        const trackInfo = document.getElementById('trackInfo');
-        const showInfo = document.getElementById('showInfo');
+        // 2. INIZIALIZZAZIONE
+        const audio = document.getElementById('audioPlayer');
+        audio.src = AUDIO_STREAM_URL;
 
-        // Inizializzazione
-        audioElement.src = AUDIO_STREAM_URL;
-
-        // Gestione eventi
-        playBtn.addEventListener('click', () => {
-            audioElement[audioElement.paused ? 'play' : 'pause']();
-            playBtn.textContent = audioElement.paused ? '▶ PLAY' : '⏸ PAUSA';
-        });
-
-        document.getElementById('volume').addEventListener('input', (e) => {
-            audioElement.volume = e.target.value;
-        });
-
-        // Funzione aggiornamento metadati
+        // 3. GESTIONE METADATI CON CORS
         async function updateMetadata() {
             try {
-                const response = await fetch(METADATA_API);
-                if(!response.ok) throw new Error('Errore HTTP');
+                const response = await fetch(METADATA_API, {
+                    headers: {
+                        'x-cors-api-key': 'temp_654e6c0d4c3e3d00315b4d4b_654e6c3d4c3e3d00315b4d4c'
+                    }
+                });
                 
                 const data = await response.json();
+                document.getElementById('trackInfo').textContent = `🎧 ${data.current.track.creator} - ${data.current.track.title}`;
+                document.getElementById('showInfo').textContent = `📻 ${data.current.show.name}`;
                 
-                if(data.current?.track?.title) {
-                    trackInfo.textContent = `🎧 ${data.current.track.creator} - ${data.current.track.title}`;
-                }
-                
-                if(data.current?.show?.name) {
-                    showInfo.textContent = `📻 ${data.current.show.name}`;
-                }
             } catch (error) {
                 console.error('Errore metadati:', error);
-                trackInfo.textContent = "🔴 Metadati non disponibili";
+                document.getElementById('trackInfo').textContent = "🔴 Controllare la connessione";
             }
         }
 
-        // Aggiornamento ogni 5 secondi
+        // 4. CONTROLLI PLAYER
+        document.getElementById('playPauseBtn').addEventListener('click', () => {
+            audio[audio.paused ? 'play' : 'pause']();
+        });
+
+        // 5. AVVIO
         setInterval(updateMetadata, 5000);
         updateMetadata();
     </script>

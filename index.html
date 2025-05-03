@@ -38,6 +38,7 @@
             margin: 15px 0;
             border: 1px dashed var(--verde);
             border-radius: 5px;
+            min-height: 80px;
         }
 
         .controls {
@@ -58,25 +59,10 @@
             transition: 0.3s;
         }
 
-        #playPauseBtn:hover {
-            opacity: 0.8;
-            transform: scale(1.05);
-        }
-
         #volume {
             width: 100px;
             height: 4px;
             accent-color: var(--verde);
-        }
-
-        #trackInfo {
-            font-size: 1.2em;
-            margin-bottom: 5px;
-        }
-
-        #showInfo {
-            font-size: 0.9em;
-            opacity: 0.8;
         }
     </style>
 </head>
@@ -85,8 +71,8 @@
         <audio id="audioPlayer"></audio>
         
         <div class="metadata-box">
-            <div id="trackInfo">Caricamento traccia...</div>
-            <div id="showInfo">Programma: Caricamento...</div>
+            <div id="trackInfo">🎧 In onda: Selezionando i brani...</div>
+            <div id="showInfo">📻 Programma in diretta</div>
         </div>
 
         <div class="controls">
@@ -111,13 +97,8 @@
 
         // Gestione pulsante Play/Pause
         playPauseBtn.addEventListener('click', () => {
-            if(audioElement.paused) {
-                audioElement.play();
-                playPauseBtn.textContent = '⏸ PAUSA';
-            } else {
-                audioElement.pause();
-                playPauseBtn.textContent = '▶ PLAY';
-            }
+            audioElement[audioElement.paused ? 'play' : 'pause']();
+            playPauseBtn.textContent = audioElement.paused ? '▶ PLAY' : '⏸ PAUSA';
         });
 
         // Gestione volume
@@ -125,27 +106,38 @@
             audioElement.volume = e.target.value;
         });
 
-        // Aggiornamento metadati
+        // Funzione aggiornamento metadati migliorata
         async function updateMetadata() {
             try {
-                const response = await fetch(METADATA_API);
+                const response = await fetch(METADATA_API + '?' + new Date().getTime());
                 const data = await response.json();
                 
-                if(data.current?.track?.title) {
-                    trackInfo.innerHTML = `🎧 ${data.current.track.creator || 'Artista'} - ${data.current.track.title}`;
+                // Controllo struttura dati
+                if(data?.current?.track) {
+                    const artist = data.current.track.creator || 'Artista sconosciuto';
+                    const title = data.current.track.title || 'Brano non disponibile';
+                    trackInfo.innerHTML = `🎧 ${artist} - ${title}`;
+                }
+
+                if(data?.current?.show) {
+                    showInfo.textContent = `📻 ${data.current.show.name}`;
                 }
                 
-                if(data.current?.show?.name) {
-                    showInfo.textContent = `Programma: ${data.current.show.name}`;
-                }
             } catch (error) {
-                console.log('Aggiornamento metadati fallito, riprovo...');
+                console.log('Aggiornamento metadati fallito');
             }
         }
 
-        // Aggiorna ogni 5 secondi
-        setInterval(updateMetadata, 5000);
-        updateMetadata();
+        // Aggiornamento ottimizzato
+        let metadataInterval = setInterval(updateMetadata, 3000);
+        
+        // Forza primo aggiornamento
+        setTimeout(updateMetadata, 1000);
+
+        // Gestione errori audio
+        audioElement.addEventListener('error', (e) => {
+            console.error('Errore audio:', audioElement.error);
+        });
     </script>
 </body>
 </html>

@@ -3,235 +3,57 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>KIKI Radio Player</title>
+    <title>LCD Display Demo</title>
+    
+    <!-- Collegamento al font Segment16C -->
+    <link href="https://fonts.googleapis.com/css2?family=Segment16C&display=swap" rel="stylesheet">
+    
+    <!-- Collegamento al file CSS locale -->
+    <link rel="stylesheet" href="LCDstyle.css">
+    
     <style>
-        /* Tutti gli stili CSS precedenti rimangono invariati */
+        /* Stili aggiuntivi per la pagina demo */
         body {
-            margin: 0;
-            padding: 20px;
-            background: #000000;
-            font-family: 'Arial', sans-serif;
+            background-color: #000;
             display: flex;
+            flex-direction: column;
+            align-items: center;
             justify-content: center;
             min-height: 100vh;
-        }
-
-        .player-container {
-            background: #2A2A2A;
-            border-radius: 15px;
+            margin: 0;
             padding: 20px;
-            max-width: 400px;
-            width: 100%;
-            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
         }
 
-        .controls {
-            display: flex;
-            align-items: center;
-            gap: 15px;
-            margin-bottom: 15px;
+        .demo-title {
+            color: #2f4f2f;
+            font-family: monospace;
+            margin-bottom: 30px;
+            text-align: center;
+            text-shadow: 0 0 5px rgba(0, 255, 0, 0.3);
         }
 
-        button {
-            background: #AFFF04;
-            border: none;
-            border-radius: 50%;
-            width: 50px;
-            height: 50px;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            transition: transform 0.2s;
-        }
-
-        button:hover {
-            transform: scale(1.05);
-        }
-
-        button:active {
-            transform: scale(0.95);
-        }
-
-        .track-info {
-            color: white;
-            flex-grow: 1;
-            min-width: 0;
-        }
-
-        .track-title {
-            font-size: 1.1em;
-            margin-bottom: 4px;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-        }
-
-        .track-artist {
-            color: #AFFF04;
-            font-size: 0.9em;
-            opacity: 0.9;
-        }
-
-        .metadata-status {
-            color: #AFFF04;
+        .note {
+            color: #2f4f2f;
+            font-family: monospace;
+            margin-top: 30px;
             font-size: 0.8em;
-            text-align: right;
-            padding-top: 10px;
-            border-top: 1px solid #3A3A3A;
-            margin-top: 15px;
-        }
-
-        .next-program {
-            color: #AFFF04;
-            font-size: 0.8em;
-            margin-top: 10px;
-            padding: 8px 0;
-            border-top: 1px solid #3A3A3A;
-            display: none;
-        }
-
-        .next-program span {
-            opacity: 0.7;
-        }
-
-        audio {
-            display: none;
-        }
-
-        @media (max-width: 480px) {
-            .player-container {
-                margin: 10px;
-                padding: 15px;
-            }
-            
-            button {
-                width: 45px;
-                height: 45px;
-            }
+            text-align: center;
+            max-width: 300px;
         }
     </style>
 </head>
 <body>
-    <div class="player-container">
-        <div class="controls">
-            <button id="playPauseBtn">▶</button>
-            <div class="track-info">
-                <div class="track-title" id="trackTitle">KIKI Radio</div>
-                <div class="track-artist" id="trackArtist">Caricamento in corso...</div>
-            </div>
+    <h1 class="demo-title">SIMULATORE DISPLAY LCD 16 SEGMENTI</h1>
+    
+    <div class="lcd-container">
+        <div class="lcd-display" data-text="AUTORADIO 2000 - 88.8 MHz - ">
+            AUTORADIO 2000 - 88.8 MHz - 
         </div>
-        <div class="next-program" id="nextProgram">
-            <span>Prossimo: </span><span id="nextShow"></span>
-        </div>
-        <div class="metadata-status" id="metadataStatus"></div>
     </div>
 
-    <script>
-        // Configurazione
-        const config = {
-            audioUrl: 'https://radiokiki.out.airtime.pro/radiokiki_a',
-            metadataUrl: 'https://api.allorigins.win/raw?url=' + 
-                        encodeURIComponent('https://radiokiki.airtime.pro/api/live-info'),
-            updateInterval: 3000,
-            defaultTitle: 'KIKI Radio',
-            defaultArtist: 'Trasmissione in diretta'
-        };
-
-        // Elementi UI
-        const elements = {
-            playPauseBtn: document.getElementById('playPauseBtn'),
-            trackTitle: document.getElementById('trackTitle'),
-            trackArtist: document.getElementById('trackArtist'),
-            metadataStatus: document.getElementById('metadataStatus'),
-            nextProgram: document.getElementById('nextProgram'),
-            nextShow: document.getElementById('nextShow'),
-            audio: new Audio(config.audioUrl)
-        };
-
-        // Stato player
-        let isPlaying = false;
-        let lastUpdate = null;
-
-        // Funzioni principali
-        async function updateMetadata() {
-            try {
-                const response = await fetch(config.metadataUrl);
-                if (!response.ok) throw new Error(`Errore HTTP! Status: ${response.status}`);
-                
-                const data = await response.json();
-                updateDisplay(data);
-                lastUpdate = new Date();
-                elements.metadataStatus.textContent = `Aggiornato: ${lastUpdate.toLocaleTimeString()}`;
-            } catch (error) {
-                console.error('Errore metadati:', error);
-                elements.metadataStatus.textContent = 'Errore aggiornamento metadati';
-                elements.trackArtist.textContent = config.defaultArtist;
-                elements.nextProgram.style.display = 'none';
-            }
-        }
-
-        function updateDisplay(data) {
-            // Metadati correnti
-            const currentTrack = data.current?.metadata || {};
-            const currentShow = data.currentShow?.[0] || {};
-            
-            elements.trackTitle.textContent = 
-                currentTrack.track_title?.trim() || 
-                currentShow.name?.trim() || 
-                config.defaultTitle;
-
-            elements.trackArtist.textContent = 
-                currentTrack.artist_name?.trim() || 
-                config.defaultArtist;
-
-            // Prossimo programma (MODIFICA CHIAVE)
-            const nextShow = data.next || null;
-            if(nextShow?.name && nextShow?.starts) {
-                try {
-                    const startTime = new Date(nextShow.starts);
-                    const formattedTime = startTime.toLocaleTimeString('it-IT', {
-                        hour: '2-digit',
-                        minute: '2-digit'
-                    });
-                    
-                    // Estrai artista e titolo dalla struttura corretta
-                    const artist = nextShow.metadata?.artist_name || 'Artista sconosciuto';
-                    const title = nextShow.metadata?.track_title || nextShow.name;
-                    
-                    elements.nextShow.textContent = `${artist} - ${title} alle ${formattedTime}`;
-                    elements.nextProgram.style.display = 'block';
-                } catch(e) {
-                    console.error('Errore formato data:', e);
-                    elements.nextProgram.style.display = 'none';
-                }
-            } else {
-                elements.nextProgram.style.display = 'none';
-            }
-        }
-
-        // Controlli audio
-        elements.playPauseBtn.addEventListener('click', () => {
-            isPlaying = !isPlaying;
-            elements.playPauseBtn.textContent = isPlaying ? '⏸' : '▶';
-            isPlaying ? elements.audio.play() : elements.audio.pause();
-        });
-
-        // Gestione errori audio
-        elements.audio.addEventListener('error', (e) => {
-            console.error('Errore audio:', e);
-            elements.metadataStatus.textContent = 'Errore riproduzione';
-        });
-
-        // Aggiornamento periodico
-        setInterval(updateMetadata, config.updateInterval);
-        updateMetadata();
-
-        // Gestione connessione
-        window.addEventListener('online', updateMetadata);
-        window.addEventListener('offline', () => {
-            elements.metadataStatus.textContent = 'Connessione assente';
-        });
-    </script>
+    <p class="note">
+        [Effetto display LCD anni 2000 con scorrimento testo]<br>
+        Carattere Segment16C - Effetto bloom e segmenti spenti
+    </p>
 </body>
 </html>

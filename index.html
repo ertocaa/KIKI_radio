@@ -3,14 +3,36 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Photorealistic LCD Display</title>
+    <title>LCD Display Video</title>
     <link rel="stylesheet" href="LCDstyle.css">
-    <!-- Assicurati che il file del font (hexoglot.ttf) sia nella stessa directory -->
+    <svg xmlns="http://www.w3.org/2000/svg" version="1.1" style="display:none;">
+        <filter id="lcd-effect">
+            <feColorMatrix type="matrix" values="0 0 0 0 0
+                                                 0 0 0 0 0
+                                                 0 0 0 0 0
+                                                 1 1 1 0 0"/>
+            <feComponentTransfer>
+                <feFuncR type="discrete" tableValues="0 1"/>
+                <feFuncG type="discrete" tableValues="0 1"/>
+                <feFuncB type="discrete" tableValues="0 1"/>
+            </feComponentTransfer>
+            <feColorMatrix type="matrix" values="0 0 0 0 0
+                                                 0 2 0 0 0
+                                                 0 0 0 0 0
+                                                 0 0 0 1 0"/>
+        </filter>
+    </svg>
 </head>
-<body style="background: #000; display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0;">
+<body>
+    <div class="lcd-video-container">
+        <video class="lcd-video" autoplay loop muted playsinline>
+            <source src="videoplayback.mp4" type="video/mp4">
+        </video>
+    </div>
+    
     <div class="lcd-display">
-        <div class="display-text">
-            KIKI RADIO - OFFLINE
+        <div class="display-container">
+            <div class="display-text"> :) CURRENTLY - OFFLINE :( </div>
         </div>
     </div>
 </body>

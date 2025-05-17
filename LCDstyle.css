@@ -30,7 +30,7 @@
     color: #9fff9f;
     position: absolute;
     white-space: nowrap;
-    animation: scroll 15s linear infinite; /* Ripristino durata originale */
+    animation: scroll 11.54s linear infinite; /* +30% velocità (15/1.3) */
     font-weight: 700;
     text-shadow: 
         0 0 8px #9fff9f,
@@ -38,10 +38,8 @@
         0 0 20px #6fcf6f;
     filter: blur(0.5px);
     letter-spacing: 2px;
-    /* Centratura verticale corretta */
-    top: 50%;
-    transform: translateY(-50%) translateX(100%); /* Posizione iniziale corretta */
-    /* Rimuovi transform: translateZ(0) se non necessario */
+    top: 50%; /* Nuovo posizionamento verticale */
+    transform: translateY(-50%) translateZ(0); /* Centratura verticale */
 }
 
 /* Modifica del pattern overlay */
@@ -58,12 +56,12 @@
             rgba(0, 30, 0, 0.3) 0px,
             rgba(0, 30, 0, 0.3) 2px,
             transparent 2px,
-            transparent 5px
+            transparent 5px /* Rettangoli orizzontali più larghi */
         ),
         repeating-linear-gradient(
             0deg,
             rgba(0, 30, 0, 0.3) 0px,
-            rgba(0, 30, 0, 0.3) 1px,
+            rgba(0, 30, 0, 0.3) 1px, /* Rettangoli verticali più stretti */
             transparent 1px,
             transparent 3px
         );
@@ -89,12 +87,8 @@
 }
 
 @keyframes scroll {
-    from { 
-        transform: translateY(-50%) translateX(100%); /* Mantiene centratura verticale */
-    }
-    to { 
-        transform: translateY(-50%) translateX(calc(-100% - 100vw)); /* Scorre completamente fuori */
-    }
+    from { transform: translateX(100%); }
+    to { transform: translateX(-100%); }
 }
 
 @keyframes glow {
@@ -103,8 +97,6 @@
 }
 
 .lcd-display {
-    overflow: visible; /* Permette al testo di uscire completamente dal container */
-    position: relative;
     background-image: 
         radial-gradient(circle at 50% 50%, 
             transparent 60%, 

@@ -1,4 +1,29 @@
-/* Modifica solo alle regole interessate */
+/* Importazione del font a segmenti dalla repository */
+/* Assicurati che il file .ttf sia presente nella stessa directory del CSS */
+/* Modifica il nome del file qui sotto se necessario ('hexoglot.ttf') */
+@font-face {
+    font-family: 'SixteenSegment';
+    src: url('Led16Segment2Italic-8wwD.ttf') format('truetype');
+    font-weight: normal;
+    font-style: normal;
+}
+
+.lcd-display {
+    width: 666px;
+    height: 66px;
+    background-color: #0a1a0a;
+    border-radius: 8px;
+    position: relative;
+    overflow: hidden;
+    padding: 12px;
+    box-shadow: 
+        inset 0 0 25px rgba(0, 30, 0, 0.7),
+        0 0 30px rgba(0, 255, 50, 0.2);
+    border: 2px solid #1a3d1a;
+    transform: translateZ(0);
+}
+
+/* Modifiche al centramento verticale e velocità */
 .display-text {
     font-family: 'SixteenSegment', monospace;
     font-size: 48px;
@@ -19,23 +44,7 @@
     /* Rimuovi transform: translateZ(0) se non necessario */
 }
 
-/* Keyframes riviste per scorrimento continuo */
-@keyframes scroll {
-    from { 
-        transform: translateY(-50%) translateX(100%); /* Mantiene centratura verticale */
-    }
-    to { 
-        transform: translateY(-50%) translateX(calc(-100% - 100vw)); /* Scorre completamente fuori */
-    }
-}
-
-/* Aggiungi questa regola per contenere il testo */
-.lcd-display {
-    overflow: visible; /* Permette al testo di uscire completamente dal container */
-    position: relative;
-}
-
-/* Modifica al pattern overlay (confermata) */
+/* Modifica del pattern overlay */
 .lcd-display::after {
     content: "";
     position: absolute;
@@ -60,4 +69,66 @@
         );
     pointer-events: none;
     mix-blend-mode: multiply;
+}
+
+/* Il resto dello CSS rimane invariato */
+.lcd-display::before {
+    content: "";
+    position: absolute;
+    top: -10%;
+    left: -10%;
+    width: 120%;
+    height: 120%;
+    background: radial-gradient(circle at center, 
+        rgba(100, 255, 100, 0.1) 0%,
+        rgba(50, 200, 50, 0.05) 30%,
+        transparent 70%);
+    pointer-events: none;
+    z-index: 1;
+    animation: glow 2s ease-in-out infinite alternate;
+}
+
+@keyframes scroll {
+    from { 
+        transform: translateY(-50%) translateX(100%); /* Mantiene centratura verticale */
+    }
+    to { 
+        transform: translateY(-50%) translateX(calc(-100% - 100vw)); /* Scorre completamente fuori */
+    }
+}
+
+@keyframes glow {
+    from { opacity: 0.6; }
+    to { opacity: 1; }
+}
+
+.lcd-display {
+    overflow: visible; /* Permette al testo di uscire completamente dal container */
+    position: relative;
+    background-image: 
+        radial-gradient(circle at 50% 50%, 
+            transparent 60%, 
+            rgba(0, 30, 0, 0.1) 100%),
+        repeating-linear-gradient(
+            45deg,
+            rgba(0, 0, 0, 0.05) 0px,
+            rgba(0, 0, 0, 0.05) 1px,
+            transparent 1px,
+            transparent 3px
+        );
+}
+
+.display-text::after {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg,
+        transparent 0%,
+        rgba(255, 255, 255, 0.05) 50%,
+        transparent 100%);
+    pointer-events: none;
+    mix-blend-mode: screen;
 }

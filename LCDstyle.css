@@ -23,14 +23,14 @@
     transform: translateZ(0);
 }
 
-/* Applicazione del font personalizzato al testo */
+/* Modifiche al centramento verticale e velocità */
 .display-text {
-    font-family: 'SixteenSegment', monospace; /* Font a segmenti applicato qui */
+    font-family: 'SixteenSegment', monospace;
     font-size: 48px;
     color: #9fff9f;
     position: absolute;
     white-space: nowrap;
-    animation: scroll 15s linear infinite;
+    animation: scroll 11.54s linear infinite; /* +30% velocità (15/1.3) */
     font-weight: 700;
     text-shadow: 
         0 0 8px #9fff9f,
@@ -38,10 +38,11 @@
         0 0 20px #6fcf6f;
     filter: blur(0.5px);
     letter-spacing: 2px;
-    transform: translateZ(0);
+    top: 50%; /* Nuovo posizionamento verticale */
+    transform: translateY(-50%) translateZ(0); /* Centratura verticale */
 }
 
-/* Segment pattern overlay */
+/* Modifica del pattern overlay */
 .lcd-display::after {
     content: "";
     position: absolute;
@@ -55,20 +56,20 @@
             rgba(0, 30, 0, 0.3) 0px,
             rgba(0, 30, 0, 0.3) 2px,
             transparent 2px,
-            transparent 7px
+            transparent 5px /* Rettangoli orizzontali più larghi */
         ),
         repeating-linear-gradient(
             0deg,
             rgba(0, 30, 0, 0.3) 0px,
-            rgba(0, 30, 0, 0.3) 2px,
-            transparent 2px,
-            transparent 9px
+            rgba(0, 30, 0, 0.3) 1px, /* Rettangoli verticali più stretti */
+            transparent 1px,
+            transparent 3px
         );
     pointer-events: none;
     mix-blend-mode: multiply;
 }
 
-/* Bloom effect enhancement */
+/* Il resto dello CSS rimane invariato */
 .lcd-display::before {
     content: "";
     position: absolute;
@@ -95,7 +96,6 @@
     to { opacity: 1; }
 }
 
-/* Noise texture for LCD realism */
 .lcd-display {
     background-image: 
         radial-gradient(circle at 50% 50%, 
@@ -110,7 +110,6 @@
         );
 }
 
-/* Reflection effect */
 .display-text::after {
     content: "";
     position: absolute;

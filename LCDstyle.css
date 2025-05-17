@@ -39,7 +39,7 @@
     filter: blur(0.5px);
     letter-spacing: 2px;
     top: 50%; /* Nuovo posizionamento verticale */
-    transform: translateY(-50%) translateZ(0); /* Centratura verticale */
+    transform: translateY(-10%) translateZ(0); /* Centratura verticale */
 }
 
 /* Modifica del pattern overlay */

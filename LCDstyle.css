@@ -38,7 +38,7 @@
         0 0 20px #6fcf6f;
     filter: blur(0.5px);
     letter-spacing: 2px;
-    top: 50%; /* Nuovo posizionamento verticale */
+    top: 20%; /* Nuovo posizionamento verticale */
     transform: translateY(-50%) translateZ(0); /* Centratura verticale */
 }
 

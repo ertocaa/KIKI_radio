@@ -1,10 +1,3 @@
-@font-face {
-    font-family: 'SixteenSegment';
-    src: url('https://rawcdn.githack.com/divVerent/hexoglot/4d6bd9f1/hexoglot.ttf') format('truetype');
-    font-weight: normal;
-    font-style: normal;
-}
-
 .lcd-display {
     width: 666px;
     height: 66px;
@@ -18,6 +11,24 @@
         0 0 30px rgba(0, 255, 50, 0.2);
     border: 2px solid #1a3d1a;
     transform: translateZ(0);
+}
+
+.display-text {
+    font-family: 'Digital 7', monospace; /* Font modificato qui */
+    font-size: 56px; /* Aumentato per compensare il font diverso */
+    color: #9fff9f;
+    position: absolute;
+    white-space: nowrap;
+    animation: scroll 15s linear infinite;
+    font-weight: normal; /* Rimuovi il bold per questo font */
+    text-shadow: 
+        0 0 8px #9fff9f,
+        0 0 15px #9fff9f,
+        0 0 20px #6fcf6f;
+    filter: blur(0.5px);
+    letter-spacing: 0px; /* Ridotto per questo font */
+    transform: translateZ(0);
+    top: -4px; /* Aggiustamento posizione verticale */
 }
 
 .display-text {

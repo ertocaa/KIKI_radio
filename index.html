@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Radio Kiki - LCD Display</title>
+    <link rel="stylesheet" href="LCDstyle.css">
+</head>
+<body>
+    <!-- Audio Player -->
+    <audio id="radio-stream" hidden>
+        <source src="https://radiokiki.out.airtime.pro/radiokiki_a" type="audio/mpeg">
+    </audio>
+
+    <!-- Radio Interface -->
+    <div class="radio-interface">
+        <!-- Main LCD Display -->
+        <div class="lcd-display">
+            <div class="display-container">
+                <div class="display-text" aria-live="polite">
+                    *** <span id="current-track" class="track-info"></span> *** 
+                    <span id="current-artist" class="artist-info"></span> ***
+                </div>
+            </div>
+        </div>
+
+        <!-- Secondary LCD Display -->
+        <div class="lcd-display-small">
+            <div class="display-container">
+                <div class="display-text" aria-live="off">
+                    --- <span id="next-track" class="track-info"></span> ---
+                    <span id="next-artist" class="artist-info"></span> ---
+                </div>
+            </div>
+        </div>
+
+        <!-- Controls Section -->
+        <div class="controls-section">
+            <div id="on-air-led" class="on-air-indicator"></div>
+            <button id="playPauseBtn" class="control-btn" aria-label="Controllo riproduzione">
+                <span class="play-icon">▶</span>
+                <span class="pause-icon">⏸</span>
+            </button>
+        </div>
+    </div>
+
+    <!-- Theme Controls -->
+    <div class="theme-controls">
+        <button data-theme="theme-green" class="theme-btn active" aria-label="Tema verde"></button>
+        <button data-theme="theme-purple" class="theme-btn" aria-label="Tema viola"></button>
+        <button data-theme="theme-yellow" class="theme-btn" aria-label="Tema giallo"></button>
+    </div>
+
+    <script src="player.js"></script>
+
+</body>
+</html>

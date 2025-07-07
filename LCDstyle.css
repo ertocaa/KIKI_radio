@@ -1,0 +1,330 @@
+/* ===== FONT DEFINITIONS ===== */
+@font-face {
+    font-family: 'SixteenSegment';
+    src: url('ATOMICCLOCKRADIO.ttf') format('truetype');
+    font-weight: normal;
+    font-style: normal;
+}
+
+/* ===== BASE STYLES ===== */
+body {
+    margin: 0;
+    padding: 0;
+    background: transparent;
+}
+
+/* ===== CONTENITORE PRINCIPALE ===== */
+.radio-interface {
+    position: relative;
+    width: 950px;
+    height: 400px;
+    background-color: #000;
+    border: 2px solid #333;
+    border-radius: 10px;
+    margin: 0;
+    padding: 0;
+}
+
+/* ===== THEME VARIABLES ===== */
+:root {
+    /* Default green theme */
+    --display-bg: #0a1a0a;
+    --display-border: #1a3d1a;
+    --display-shadow: 
+        inset 0 0 25px rgba(0, 30, 0, 0.7), 
+        0 0 30px rgba(0, 255, 50, 0.2);
+    --grid-color: rgba(0, 30, 0, 0.3);
+    --glow-color: radial-gradient(
+        circle at center, 
+        rgba(100, 255, 100, 0.1) 0%,
+        rgba(50, 200, 50, 0.05) 30%,
+        transparent 70%
+    );
+    --text-color: #c9ffc9;
+    --text-shadow: 
+        0 0 8px #9fff9f,
+        0 0 15px #9fff9f,
+        0 0 20px #6fcf6f;
+    --small-text-color: #e2fce2;
+}
+
+.theme-purple {
+    --display-bg: #1a0a1a;
+    --display-border: #3d1a3d;
+    --display-shadow: 
+        inset 0 0 25px rgba(30, 0, 30, 0.7), 
+        0 0 30px rgba(255, 50, 255, 0.2);
+    --grid-color: rgba(30, 0, 30, 0.3);
+    --glow-color: radial-gradient(
+        circle at center, 
+        rgba(255, 100, 255, 0.1) 0%,
+        rgba(200, 50, 200, 0.05) 30%,
+        transparent 70%
+    );
+    --text-color: #ffc9ff;
+    --text-shadow: 
+        0 0 8px #ff9fff,
+        0 0 15px #ff9fff,
+        0 0 20px #cf6fcf;
+    --small-text-color: #ffc9ff;
+}
+
+.theme-yellow {
+    --display-bg: #1a1a0a;
+    --display-border: #3d3d1a;
+    --display-shadow: 
+        inset 0 0 25px rgba(30, 30, 0, 0.7), 
+        0 0 30px rgba(255, 255, 50, 0.2);
+    --grid-color: rgba(30, 30, 0, 0.3);
+    --glow-color: radial-gradient(
+        circle at center, 
+        rgba(255, 255, 100, 0.1) 0%,
+        rgba(200, 200, 50, 0.05) 30%,
+        transparent 70%
+    );
+    --text-color: #ffffc9;
+    --text-shadow: 
+        0 0 8px #ffff9f,
+        0 0 15px #ffff9f,
+        0 0 20px #cfcf6f;
+    --small-text-color: #ffffc9;
+}
+
+/* ===== SHARED LCD STYLES ===== */
+.lcd-display, 
+.lcd-display-small {
+    background-color: var(--display-bg);
+    border: 2px solid var(--display-border);
+    border-radius: 8px;
+    box-shadow: var(--display-shadow);
+    position: absolute;
+    overflow: hidden;
+    padding: 12px;
+
+    &::before, 
+    &::after {
+        content: "";
+        position: absolute;
+        pointer-events: none;
+    }
+
+    &::after {
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-image: 
+            repeating-linear-gradient(
+                90deg,
+                var(--grid-color) 0px,
+                var(--grid-color) 2px,
+                transparent 2px,
+                transparent 5px
+            ),
+            repeating-linear-gradient(
+                0deg,
+                var(--grid-color) 0px,
+                var(--grid-color) 1px,
+                transparent 1px,
+                transparent 3px
+            );
+        mix-blend-mode: multiply;
+    }
+
+    &::before {
+        top: -10%;
+        left: -10%;
+        width: 120%;
+        height: 120%;
+        background: var(--glow-color);
+        z-index: 1;
+        animation: glow 2s ease-in-out infinite alternate;
+    }
+
+    .display-container {
+        position: absolute;
+        top: 27%;
+        transform: translateY(-50%);
+        display: flex;
+        animation: scroll 10s linear infinite;
+    }
+
+    .display-text {
+        font-family: 'SixteenSegment', monospace;
+        white-space: nowrap;
+        flex-shrink: 0;
+        text-shadow: var(--text-shadow);
+        letter-spacing: 2px;
+        position: relative;
+
+        &::after {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(
+                90deg,
+                transparent 0%,
+                rgba(255, 255, 255, 0.05) 50%,
+                transparent 100%
+            );
+            mix-blend-mode: screen;
+        }
+    }
+}
+
+/* ===== STEP 1: RIPOSIZIONO IL DISPLAY PRINCIPALE ===== */
+.lcd-display {
+    width: 666px;
+    height: 66px;
+    top: 50px;
+    left: 200px;
+
+    .display-text {
+        font-size: 48px;
+        color: var(--text-color);
+        padding-right: 10px;
+        filter: blur(0.5px);
+    }
+}
+
+/* ===== STEP 2: RIPOSIZIONO IL DISPLAY SECONDARIO ===== */
+.lcd-display-small {
+    width: 433px;
+    height: 36px;
+    top: 150px;
+    left: 350px;
+
+    .display-text {
+        font-size: 31.2px;
+        color: var(--small-text-color);
+        padding-right: 5px;
+        filter: blur(0.7px);
+    }
+}
+
+/* ===== STEP 3: RIPOSIZIONO IL PULSANTE PLAY/PAUSE ===== */
+#playPauseBtn {
+    position: absolute;
+    top: 50%;
+    left: -105px;
+    transform: translateY(-50%);
+    z-index: 2;
+    background: #333;
+    border-radius: 50%;
+    width: 210px;
+    height: 210px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    border: 3px solid #555;
+
+    /* Mantieni le icone ma nascondi quello che non serve */
+    .play-icon, .pause-icon {
+        font-size: 40px;
+        color: #fff;
+    }
+}
+
+/* ===== STEP 4: RIPOSIZIONO IL LED INDICATOR ===== */
+#on-air-led {
+    position: absolute;
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    top: 30px;
+    right: 30px;
+    z-index: 2;
+    
+    /* Default state */
+    background: radial-gradient(circle at 30% 30%, #3a0000, #1a0000);
+    border: 1px solid #2a0000;
+    box-shadow: 
+        inset 0 0 8px rgba(0, 0, 0, 0.8),
+        0 1px 0 rgba(255, 255, 255, 0.1);
+
+    /* Active state */
+    &.active {
+        background: radial-gradient(
+            circle at 30% 30%, 
+            rgba(255, 0, 0, 1) 0%, 
+            rgba(180, 0, 0, 0.8) 30%, 
+            rgba(100, 0, 0, 0.4) 70%, 
+            rgba(50, 0, 0, 0.2) 100%
+        );
+        box-shadow: 
+            inset 0 0 15px rgba(255, 100, 100, 0.9),
+            inset 0 0 5px rgba(255, 200, 200, 0.8),
+            0 0 0 1px rgba(255, 0, 0, 0.3);
+        border: 1px solid rgba(150, 0, 0, 0.5);
+        border-top: 1px solid rgba(255, 100, 100, 0.6);
+        border-left: 1px solid rgba(255, 50, 50, 0.5);
+        animation: heartbeat 1.2s infinite;
+    }
+}
+
+/* ===== STEP 5: RIPOSIZIONO I CONTROLLI TEMA ===== */
+.theme-controls {
+    position: absolute;
+    top: 250px;
+    left: 250px;
+    display: flex;
+    flex-direction: row;
+    gap: 15px;
+    z-index: 10;
+}
+
+.theme-btn {
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    background: #333;
+    border: 2px solid #555;
+    cursor: pointer;
+}
+
+.theme-btn.active {
+    border-color: #fff;
+    box-shadow: 0 0 10px rgba(255, 255, 255, 0.5);
+}
+
+/* Colori specifici per i pulsanti tema */
+.theme-btn[data-theme="theme-green"] {
+    background: linear-gradient(45deg, #2d5a2d, #4a8c4a);
+}
+
+.theme-btn[data-theme="theme-purple"] {
+    background: linear-gradient(45deg, #5a2d5a, #8c4a8c);
+}
+
+.theme-btn[data-theme="theme-yellow"] {
+    background: linear-gradient(45deg, #5a5a2d, #8c8c4a);
+}
+
+/* ===== ANIMATIONS ===== */
+@keyframes scroll {
+    0% { transform: translateX(100%); }
+    100% { transform: translateX(calc(-100% - 10px)); }
+}
+
+@keyframes glow {
+    from { opacity: 0.6; }
+    to { opacity: 1; }
+}
+
+@keyframes heartbeat {
+    0% { 
+        opacity: 0.7;
+        transform: scale(0.95);
+    }
+    50% { 
+        opacity: 1;
+        transform: scale(1.05);
+    }
+    100% { 
+        opacity: 0.7;
+        transform: scale(0.95);
+    }
+}
